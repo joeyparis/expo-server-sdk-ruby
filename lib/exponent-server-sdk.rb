@@ -56,7 +56,7 @@ module Exponent
         when /(^4|^5)/
           raise build_error_from_failure(parse_json(response))
         else
-          handle_success(parse_json(response))
+          parse_json(response).fetch("data")
         end
       end
 
@@ -70,31 +70,6 @@ module Exponent
 
       def build_error_from_failure(response)
         error_builder.build_from_erroneous(response)
-      end
-
-      def handle_success(response)
-        extract_data(response)
-      end
-
-      def extract_data(response)
-        data = response.fetch('data')
-        if data.is_a? Hash
-          validate_status(data.fetch('status'), response)
-          data
-        else
-          data.map do |receipt|
-            validate_status(receipt.fetch('status'), response)
-            receipt
-          end
-        end
-      end
-
-      def validate_status(status, response)
-        raise build_error_from_success(response) unless status == 'ok'
-      end
-
-      def build_error_from_success(response)
-        error_builder.build_from_successful(response)
       end
     end
 
